@@ -50,6 +50,8 @@ class FxgFxParser {
     private double aspectRatio
     private double offsetX
     private double offsetY
+    private double groupOffsetX
+    private double groupOffsetY
     private class FxgPathReader {
         protected List path
         protected double scaleFactorX
@@ -99,8 +101,8 @@ class FxgFxParser {
 
     // ********************   P R I V A T E   M E T H O D S   **********************************************************
     private Rectangle parseRectangle(node) {
-        double x = (node.@x ?: 0).toDouble() * scaleFactorX
-        double y = (node.@y ?: 0).toDouble() * scaleFactorY
+        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         double width = (node.@width ?: 0).toDouble() * scaleFactorX
         double height = (node.@height ?: 0).toDouble() * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
@@ -117,8 +119,8 @@ class FxgFxParser {
     }
 
     private Ellipse parseEllipse(node) {
-        double x = (node.@x ?: 0).toDouble() * scaleFactorX
-        double y = (node.@y ?: 0).toDouble() * scaleFactorY
+        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         double width = (node.@width ?: 0).toDouble() * scaleFactorX
         double height = (node.@height ?: 0).toDouble() * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
@@ -130,10 +132,10 @@ class FxgFxParser {
     }
 
     private Line parseLine(node) {
-        double xFrom = (node.@xFrom ?: 0).toDouble() * scaleFactorX
-        double yFrom = (node.@yFrom ?: 0).toDouble() * scaleFactorY
-        double xTo = (node.@xTo ?: 0).toDouble() * scaleFactorX
-        double yTo = (node.@yTo ?: 0).toDouble() * scaleFactorX
+        double xFrom = ((node.@xFrom ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double yFrom = ((node.@yFrom ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double xTo = ((node.@xTo ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double yTo = ((node.@yTo ?: 0).toDouble() + groupOffsetY) * scaleFactorX
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -144,8 +146,8 @@ class FxgFxParser {
 
     private Path parsePath(node) {
         String data = node.@data ?: ''
-        //double x = (node.@x ?: 0).toDouble() * scaleFactorX
-        //double y = (node.@y ?: 0).toDouble() * scaleFactorY
+        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -158,25 +160,25 @@ class FxgFxParser {
         def pathList = data.tokenize()
         def pathReader = new FxgPathReader(pathList, scaleFactorX, scaleFactorY)
 
-        processPath(pathList, pathReader, path)
+        processPath(pathList, pathReader, path, x, y)
 
         return path
     }
 
-    private processPath(pathList, FxgPathReader reader, Path path) {
+    private processPath(pathList, FxgPathReader reader, Path path, double x, double y) {
         while (pathList) {
             switch (reader.read()) {
                 case "M":
-                    path.getElements().add(new MoveTo(reader.nextX(), reader.nextY()))
+                    path.getElements().add(new MoveTo(reader.nextX() + x, reader.nextY() + y))
                     break
                 case "L":
-                    path.getElements().add(new LineTo(reader.nextX(), reader.nextY()))
+                    path.getElements().add(new LineTo(reader.nextX() + x, reader.nextY() + y))
                     break
                 case "C":
-                    path.getElements().add(new CubicCurveTo(reader.nextX(), reader.nextY(), reader.nextX(), reader.nextY(), reader.nextX(), reader.nextY()))
+                    path.getElements().add(new CubicCurveTo(reader.nextX() + x, reader.nextY() + y, reader.nextX() + x, reader.nextY() + y, reader.nextX() + x, reader.nextY() + y))
                     break
                 case "Q":
-                    path.getElements().add(new QuadCurveTo(reader.nextX(), reader.nextY(), reader.nextX(), reader.nextY()))
+                    path.getElements().add(new QuadCurveTo(reader.nextX() + x, reader.nextY() + y, reader.nextX() + x, reader.nextY() + y))
                     break
                 case "Z":
                     path.getElements().add(new ClosePath())
@@ -401,29 +403,31 @@ class FxgFxParser {
             Shape shape
             switch(node.name()) {
                 case FXG.Group:
+                    groupOffsetX = (node.@x ?: 0).toDouble()
+                    groupOffsetY = (node.@y ?: 0).toDouble()
                     convertLayer(node, group)
                     break
                 case FXG.Rect:
                     shape = parseRectangle(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
+                    offsetX = shape.layoutBounds.minX + groupOffsetX
+                    offsetY = shape.layoutBounds.minY + groupOffsetY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Ellipse:
                     shape = parseEllipse(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
+                    offsetX = shape.layoutBounds.minX + groupOffsetX
+                    offsetY = shape.layoutBounds.minY + groupOffsetY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Line:
                     shape = parseLine(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
+                    offsetX = shape.layoutBounds.minX + groupOffsetX
+                    offsetY = shape.layoutBounds.minY + groupOffsetY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Path:
-                    offsetX = 0
-                    offsetY = 0
+                    offsetX = groupOffsetX
+                    offsetY = groupOffsetY
                     shape = parsePath(node)
                     group.getChildren().add(paintShape(node, shape))
                     break

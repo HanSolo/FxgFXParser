@@ -25,7 +25,7 @@ public class FxgTest extends Application
 
     public class Test extends Parent {
         public Test(int width, int height) {
-            String fxgFile = "/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files/volume_fw.fxg";
+            String fxgFile = "/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files/volume_ai.fxg";
             FxgFxParser parser = new FxgFxParser();
             long start = System.currentTimeMillis();
             Map<String, Group> groups = parser.parse(fxgFile, width, height, true);
