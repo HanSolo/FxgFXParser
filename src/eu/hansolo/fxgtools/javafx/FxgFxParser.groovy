@@ -242,7 +242,7 @@ class FxgFxParser {
                 def solidColorStroke = stroke[0].SolidColorStroke
                 String colorString = (solidColorStroke[0].@color ?: '#000000')
                 double weight = (solidColorStroke[0].@weight ?: 1f).toDouble() * scaleFactorX
-                String caps = (solidColorStroke[0].@caps ?: 'caps')
+                String caps = (solidColorStroke[0].@caps ?: 'round')
                 String joints = (solidColorStroke[0].@joints ?: 'round')
                 int alpha = (solidColorStroke[0].@alpha ?: 1).toDouble()
                 Color color = parseColor(colorString, alpha)

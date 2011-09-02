@@ -25,16 +25,13 @@ public class FxgTest extends Application
 
     public class Test extends Parent {
         public Test(int width, int height) {
-            String fxgFile = "/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files/gradients2.fxg";
+            String fxgFile = "/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files/volume_fw.fxg";
             FxgFxParser parser = new FxgFxParser();
             long start = System.currentTimeMillis();
             Map<String, Group> groups = parser.parse(fxgFile, width, height, true);
             System.out.println("Parsing and converting: " + (System.currentTimeMillis() - start) + " ms");
             getChildren().addAll(groups.values());
         }
-
-        
-   
     }
 
     public static void main(String[] args) {
