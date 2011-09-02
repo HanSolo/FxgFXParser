@@ -32,6 +32,9 @@ public class FxgTest extends Application
             System.out.println("Parsing and converting: " + (System.currentTimeMillis() - start) + " ms");
             getChildren().addAll(groups.values());
         }
+
+        
+   
     }
 
     public static void main(String[] args) {
