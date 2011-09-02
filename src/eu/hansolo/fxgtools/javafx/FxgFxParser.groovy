@@ -394,7 +394,9 @@ class FxgFxParser {
     private Shape paintShape(node, shape) {
         shape.setFill(parseFill(node))
         parseStroke(node, shape)
-        shape.setEffect(parseFilter(node, shape))
+        if(node.filter) {
+            shape.setEffect(parseFilter(node, shape))
+        }
         return shape
     }
 
