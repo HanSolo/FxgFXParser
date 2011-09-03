@@ -189,8 +189,8 @@ class FxgFxParser {
 
     private Text parseRichText(node) {
         def fxgLabel = node.content[0].p[0]
-        double x = (node.@x ?: 0).toDouble() * scaleFactorX
-        double y = (node.@y ?: 0).toDouble() * scaleFactorY
+        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         String fontFamily = (fxgLabel.@fontFamily ?: 'sans-serif')
         String fontStyle = (node.@fontStyle ?: 'normal')
         String textDecoration = (node.@textDecoration ?: 'none')
