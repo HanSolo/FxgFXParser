@@ -346,8 +346,8 @@ class FxgFxParser {
 
     private Paint convertLinearGradient(node) {
         def linearGradient = node.LinearGradient[0]
-        double x1 = (linearGradient.@x ?: 0).toDouble() * scaleFactorX
-        double y1 = (linearGradient.@y ?: 0).toDouble() * scaleFactorY
+        double x1 = ((linearGradient.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y1 = ((linearGradient.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         double scaleX = (linearGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (linearGradient.@scaleY ?: 1).toDouble()
         double rotation = Math.toRadians((linearGradient.@rotation ?: 0).toDouble())
@@ -362,8 +362,8 @@ class FxgFxParser {
 
     private Paint convertRadialGradient(node) {
         def radialGradient = node.RadialGradient[0]
-        double x1 = (radialGradient.@x ?: 0).toDouble()
-        double y1 = (radialGradient.@y ?: 0).toDouble()
+        double x1 = ((radialGradient.@x ?: 0).toDouble()) + groupOffsetX
+        double y1 = ((radialGradient.@y ?: 0).toDouble()) + groupOffsetY
         double scaleX = (radialGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (radialGradient.@scaleY ?: 0).toDouble()
         double rotation = Math.toRadians((radialGradient.@rotation ?: 0).toDouble())
@@ -394,7 +394,7 @@ class FxgFxParser {
     private Shape paintShape(node, shape) {
         shape.setFill(parseFill(node))
         parseStroke(node, shape)
-        if(node.filter) {
+        if(node.filters) {
             shape.setEffect(parseFilter(node, shape))
         }
         return shape
