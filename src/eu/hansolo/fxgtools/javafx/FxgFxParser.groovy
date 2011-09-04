@@ -346,8 +346,8 @@ class FxgFxParser {
 
     private Paint convertLinearGradient(node) {
         def linearGradient = node.LinearGradient[0]
-        double x1 = ((linearGradient.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double y1 = ((linearGradient.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double x1 = (linearGradient.@x ?: 0).toDouble() * scaleFactorX
+        double y1 = (linearGradient.@y ?: 0).toDouble() * scaleFactorY
         double scaleX = (linearGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (linearGradient.@scaleY ?: 1).toDouble()
         double rotation = Math.toRadians((linearGradient.@rotation ?: 0).toDouble())
@@ -355,6 +355,7 @@ class FxgFxParser {
         double y2 = Math.sin(rotation) * scaleX * scaleFactorY + y1
         def gradientEntries = linearGradient.GradientEntry
         Stop[] stops = convertGradientEntries(gradientEntries)
+
         LinearGradient gradient = new LinearGradient(x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY, false, CycleMethod.NO_CYCLE, stops)
 
         return gradient
@@ -362,8 +363,8 @@ class FxgFxParser {
 
     private Paint convertRadialGradient(node) {
         def radialGradient = node.RadialGradient[0]
-        double x1 = ((radialGradient.@x ?: 0).toDouble()) + groupOffsetX
-        double y1 = ((radialGradient.@y ?: 0).toDouble()) + groupOffsetY
+        double x1 = (radialGradient.@x ?: 0).toDouble()
+        double y1 = (radialGradient.@y ?: 0).toDouble()
         double scaleX = (radialGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (radialGradient.@scaleY ?: 0).toDouble()
         double rotation = Math.toRadians((radialGradient.@rotation ?: 0).toDouble())
@@ -411,20 +412,20 @@ class FxgFxParser {
                     break
                 case FXG.Rect:
                     shape = parseRectangle(node)
-                    offsetX = shape.layoutBounds.minX + groupOffsetX
-                    offsetY = shape.layoutBounds.minY + groupOffsetY
+                    offsetX = shape.layoutBounds.minX
+                    offsetY = shape.layoutBounds.minY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Ellipse:
                     shape = parseEllipse(node)
-                    offsetX = shape.layoutBounds.minX + groupOffsetX
-                    offsetY = shape.layoutBounds.minY + groupOffsetY
+                    offsetX = shape.layoutBounds.minX
+                    offsetY = shape.layoutBounds.minY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Line:
                     shape = parseLine(node)
-                    offsetX = shape.layoutBounds.minX + groupOffsetX
-                    offsetY = shape.layoutBounds.minY + groupOffsetY
+                    offsetX = shape.layoutBounds.minX
+                    offsetY = shape.layoutBounds.minY
                     group.getChildren().add(paintShape(node, shape))
                     break
                 case FXG.Path:
