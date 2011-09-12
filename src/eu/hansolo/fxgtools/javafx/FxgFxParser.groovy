@@ -364,15 +364,15 @@ class FxgFxParser {
 
     private Paint convertRadialGradient(node) {
         def radialGradient = node.RadialGradient[0]
-        double x1 = (radialGradient.@x ?: 0).toDouble()
-        double y1 = (radialGradient.@y ?: 0).toDouble()
+        double x1 = (radialGradient.@x ?: 0).toDouble() * scaleFactorX
+        double y1 = (radialGradient.@y ?: 0).toDouble() * scaleFactorY
         double scaleX = (radialGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (radialGradient.@scaleY ?: 0).toDouble()
         double rotation = Math.toRadians((radialGradient.@rotation ?: 0).toDouble())
-        double x2 = Math.cos(rotation) * scaleX + x1
-        double y2 = Math.sin(rotation) * scaleX + y1
-        Point2D center = new Point2D((x1 * scaleFactorX), (y1 * scaleFactorY))
-        Point2D stop = new Point2D((x2 * scaleFactorX), (y2 * scaleFactorY))
+        double x2 = Math.cos(rotation) * scaleX * scaleFactorX + x1
+        double y2 = Math.sin(rotation) * scaleX * scaleFactorY + y1
+        Point2D center = new Point2D(x1, y1)
+        Point2D stop = new Point2D(x2, y2)
         double radius = (center.distance(stop) / 2.0)
         def gradientEntries = radialGradient.GradientEntry
 
