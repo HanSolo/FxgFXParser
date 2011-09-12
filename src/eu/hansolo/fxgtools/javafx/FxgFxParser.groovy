@@ -52,6 +52,7 @@ class FxgFxParser {
     private double offsetY
     private double groupOffsetX
     private double groupOffsetY
+    private double lastShapeAlpha
     private class FxgPathReader {
         protected List path
         protected double scaleFactorX
@@ -108,7 +109,7 @@ class FxgFxParser {
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
-        //int alpha = (node.@alpha ?: 1).toDouble() * 255
+        lastShapeAlpha = (node.@alpha ?: 1).toDouble()
         double radiusX = (node.@radiusX ?: 0).toDouble() * scaleFactorX
         double radiusY = (node.@radiusY ?: 0).toDouble() * scaleFactorY
 
@@ -126,7 +127,7 @@ class FxgFxParser {
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
-        //int alpha = (node.@alpha ?: 1).toDouble() * 255
+        lastShapeAlpha = (node.@alpha ?: 1).toDouble()
 
         return new Ellipse(x + width / 2, y + height / 2, width, height)
     }
@@ -139,7 +140,7 @@ class FxgFxParser {
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
-        //int alpha = (node.@alpha ?: 1).toDouble() * 255
+        lastShapeAlpha = (node.@alpha ?: 1).toDouble()
 
         return new Line(xFrom, yFrom, xTo, yTo)
     }
@@ -151,7 +152,7 @@ class FxgFxParser {
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
-        //int alpha = (node.@alpha ?: 1).toDouble() * 255
+        lastShapeAlpha = (node.@alpha ?: 1).toDouble()
         String winding = (node.@winding ?: 'evenOdd')
         Path path = new Path()
         path.setFillRule(winding == 'evenOdd' ? FillRule.EVEN_ODD : FillRule.NON_ZERO)
@@ -197,7 +198,7 @@ class FxgFxParser {
         boolean lineThrough = ((node.@lineThrough ?: 'false')) == 'true'
         double fontSize = (fxgLabel.@fontSize ?: 10).toDouble() * scaleFactorX
         String colorString = (node.content.p.@color[0] ?: '#000000')
-        double alpha = (node.@alpha ?: 1).toDouble()
+        double alpha = (node.@alpha ?: 1).toDouble() * lastShapeAlpha
         y += fontSize
         Color color = parseColor(colorString, alpha)
         boolean bold = ((fxgLabel.@fontWeight ?: 'normal') == 'bold') == 'bold'
@@ -246,7 +247,7 @@ class FxgFxParser {
                 double weight = (solidColorStroke[0].@weight ?: 1f).toDouble() * scaleFactorX
                 String caps = (solidColorStroke[0].@caps ?: 'round')
                 String joints = (solidColorStroke[0].@joints ?: 'round')
-                int alpha = (solidColorStroke[0].@alpha ?: 1).toDouble()
+                int alpha = (solidColorStroke[0].@alpha ?: 1).toDouble() * lastShapeAlpha
                 Color color = parseColor(colorString, alpha)
 
                 weight.compareTo(2.0) <= 0 ? shape.setStrokeType(StrokeType.OUTSIDE) : shape.setStrokeType(StrokeType.CENTERED)
@@ -305,7 +306,7 @@ class FxgFxParser {
         double angle = Math.toRadians(-(dropShadow.@angle ?: 0).toDouble())
         String colorString = (dropShadow.@color ?: '#000000')
         int distance = (dropShadow.@distance ?: 0).toDouble()
-        double alpha = (dropShadow.@alpha ?: 1).toDouble()
+        double alpha = (dropShadow.@alpha ?: 1).toDouble() * lastShapeAlpha
         int blurX = (dropShadow.@blurX ?: 0).toDouble() * scaleFactorX
         //int blurY = (filter.DropShadowFilter.@blurY ?: 0).toDouble() * scaleFactorY
         boolean inner = (dropShadow.@inner ?: false)
@@ -328,7 +329,7 @@ class FxgFxParser {
 
     private Color parseColor(node) {
         String color = (node.@color ?: '#000000')
-        double alpha = (node.@alpha ?: 1).toDouble()
+        double alpha = (node.@alpha ?: 1).toDouble() * lastShapeAlpha
         return parseColor(color, alpha)
     }
 
@@ -385,7 +386,7 @@ class FxgFxParser {
         List stops = []
         gradientEntries.each { def gradientEntry->
             double fraction = (gradientEntry.@ratio ?: 0).toDouble()
-            double alpha = (gradientEntry.@alpha ?: 1).toDouble()
+            double alpha = (gradientEntry.@alpha ?: 1).toDouble() * lastShapeAlpha
             Color color = gradientEntry.@color == null ? Color.BLACK : parseColor(gradientEntry.@color, alpha)
             stops.add(new Stop(fraction, color))
         }
