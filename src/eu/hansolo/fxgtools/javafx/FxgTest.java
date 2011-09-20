@@ -16,8 +16,8 @@ public class FxgTest extends Application
 {
     @Override
     public void start(Stage stage) {
-        Test component = new Test(306, 306);
-        Scene scene = new Scene(component, 306, 306);
+        Test component = new Test(400, 400);
+        Scene scene = new Scene(component, 400, 400);
         stage.setTitle("FXG -> JavaFX (live)");
         stage.setScene(scene);
         stage.show();

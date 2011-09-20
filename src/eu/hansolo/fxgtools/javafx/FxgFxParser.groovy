@@ -31,6 +31,7 @@ import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.effect.InnerShadow
 import javafx.scene.effect.DropShadow
+import javafx.scene.transform.Affine
 
 /**
  * User: han.solo at muenster.de
@@ -53,6 +54,7 @@ class FxgFxParser {
     private double groupOffsetX
     private double groupOffsetY
     private double lastShapeAlpha
+    private Affine groupTransform
     private class FxgPathReader {
         protected List path
         protected double scaleFactorX
@@ -208,6 +210,9 @@ class FxgFxParser {
         FontWeight fontWeight = (bold ? FontWeight.BOLD : FontWeight.NORMAL)
         FontPosture fontPosture = (italic ? FontPosture.ITALIC : FontPosture.REGULAR)
         Text richtext = new Text()
+        if (node.transform) {
+            richtext.transforms.add(parseTransform(node))
+        }
         richtext.setText(text.trim())
         richtext.setFont(Font.font(fontFamily, fontWeight, fontPosture, fontSize))
         richtext.setX(x)
@@ -282,6 +287,20 @@ class FxgFxParser {
         }
 
         return shape
+    }
+
+    private Affine parseTransform(node) {
+        Affine transform = new Affine()
+        if (node.transform.Transform.matrix.Matrix) {
+            def matrix = node.transform.Transform.matrix.Matrix
+            transform.setMxx((matrix.@a[0] ?: 0.0).toDouble()) // scaleX
+            transform.setMyx((matrix.@b[0] ?: 0.0).toDouble()) // shearY
+            transform.setMxy((matrix.@c[0] ?: 0.0).toDouble()) // shearX
+            transform.setMyy((matrix.@d[0] ?: 0.0).toDouble()) // scaleY
+            transform.setTx(((matrix.@tx[0] ?: 0.0).toDouble() + groupOffsetX) * scaleFactorX) // translateX
+            transform.setTy(((matrix.@ty[0] ?: 0.0).toDouble() + groupOffsetY) * scaleFactorY) // translateY
+        }
+        return transform
     }
 
     private Effect parseFilter(node, shape) {
@@ -394,11 +413,15 @@ class FxgFxParser {
     }
 
     private Shape paintShape(node, shape) {
+        if (groupTransform != null) {
+            shape.transforms.add(groupTransform)
+        }
         shape.setFill(parseFill(node))
         parseStroke(node, shape)
         if(node.filters) {
             shape.setEffect(parseFilter(node, shape))
         }
+        groupTransform = null
         return shape
     }
 
@@ -409,6 +432,11 @@ class FxgFxParser {
                 case FXG.Group:
                     groupOffsetX = (node.@x ?: 0).toDouble()
                     groupOffsetY = (node.@y ?: 0).toDouble()
+                    if (node.transform) {
+                        groupTransform = parseTransform(node)
+                    } else {
+                        groupTransform = null
+                    }
                     convertLayer(node, group)
                     break
                 case FXG.Rect:
