@@ -32,6 +32,9 @@ import javafx.scene.shape.StrokeLineJoin
 import javafx.scene.effect.InnerShadow
 import javafx.scene.effect.DropShadow
 import javafx.scene.transform.Affine
+import javafx.scene.transform.Rotate
+import javafx.scene.transform.Scale
+import javafx.scene.text.TextBoundsType
 
 /**
  * User: han.solo at muenster.de
@@ -192,28 +195,38 @@ class FxgFxParser {
 
     private Text parseRichText(node) {
         def fxgLabel = node.content[0].p[0]
+        String text
+        double fontSize
+        String colorString
+        if (fxgLabel.span) {
+            // Adobe Illustrator
+            text = node.content[0].p[0].span[0].text()
+            fontSize = (node.@fontSize ?: 10).toDouble() * scaleFactorX
+            colorString = (node.@color ?: '#000000')
+        } else {
+            // Adobe Fireworks
+            text = fxgLabel.text()
+            fontSize = (fxgLabel.@fontSize ?: 10).toDouble() * scaleFactorX
+            colorString = (node.content.p.@color[0] ?: '#000000')
+        }
         double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
         double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double rotation = ((node.@rotation ?: 0).toDouble())
+        double scaleX = ((node.@scaleX ?: 1).toDouble())
+        double scaleY = ((node.@scaleY ?: 1).toDouble())
         String fontFamily = (fxgLabel.@fontFamily ?: 'sans-serif')
         String fontStyle = (node.@fontStyle ?: 'normal')
         String textDecoration = (node.@textDecoration ?: 'none')
         boolean lineThrough = ((node.@lineThrough ?: 'false')) == 'true'
-        double fontSize = (fxgLabel.@fontSize ?: 10).toDouble() * scaleFactorX
-        String colorString = (node.content.p.@color[0] ?: '#000000')
         double alpha = (node.@alpha ?: 1).toDouble() * lastShapeAlpha
         y += fontSize
         Color color = parseColor(colorString, alpha)
         boolean bold = ((fxgLabel.@fontWeight ?: 'normal') == 'bold') == 'bold'
         boolean italic = fontStyle == 'italic'
         boolean underline = textDecoration == 'underline'
-        String text = fxgLabel.text()
         FontWeight fontWeight = (bold ? FontWeight.BOLD : FontWeight.NORMAL)
         FontPosture fontPosture = (italic ? FontPosture.ITALIC : FontPosture.REGULAR)
-        Text richtext = new Text()
-        if (node.transform) {
-            richtext.transforms.add(parseTransform(node))
-        }
-        richtext.setText(text.trim())
+        Text richtext = new Text(text.trim())
         richtext.setFont(Font.font(fontFamily, fontWeight, fontPosture, fontSize))
         richtext.setX(x)
         richtext.setY(y)
@@ -221,6 +234,12 @@ class FxgFxParser {
         richtext.setStrikethrough(lineThrough)
         richtext.setUnderline(underline)
         richtext.setFill(color)
+        //richtext.boundsType = TextBoundsType.LOGICAL
+        richtext.getTransforms().add(new Rotate(rotation, richtext.x, richtext.y))
+        richtext.getTransforms().add(new Scale(scaleX, scaleY))
+        if (node.transform) {
+            richtext.transforms.add(parseTransform(node))
+        }
         return richtext
     }
 
