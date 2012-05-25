@@ -35,6 +35,7 @@ import javafx.scene.transform.Affine
 import javafx.scene.transform.Rotate
 import javafx.scene.transform.Scale
 import javafx.scene.text.TextBoundsType
+import javafx.scene.effect.BlurType
 
 /**
  * User: han.solo at muenster.de
@@ -104,6 +105,13 @@ class FxgFxParser {
         return groups
     }
 
+    int originalWidth() {
+        return originalWidth
+    }
+
+    int originalHeight() {
+        return originalHeight
+    }
 
     // ********************   P R I V A T E   M E T H O D S   **********************************************************
     private Rectangle parseRectangle(node) {
@@ -327,11 +335,11 @@ class FxgFxParser {
         if (node.filters) {
             node.filters.eachWithIndex { filter, i ->
                 if (filter.DropShadowFilter) {
-                    filter.DropShadowFilter.each { Node dropShadow ->
+                    filter.DropShadowFilter.each { Node effectNode ->
                         if (shapeFilters != null) {
-                            shapeFilters.inputProperty().set(addFilter(dropShadow, shapeFilters))
+                            shapeFilters.setInput(parseShadow(effectNode))
                         } else {
-                            shapeFilters = addFilter(dropShadow, shapeFilters)
+                            shapeFilters = parseShadow(effectNode)
                         }
                     }
                 }
@@ -340,29 +348,34 @@ class FxgFxParser {
         return shapeFilters
     }
 
-    private Effect addFilter(Node dropShadow, Effect fxgFilter) {
-        double angle = Math.toRadians(-(dropShadow.@angle ?: 0).toDouble())
-        String colorString = (dropShadow.@color ?: '#000000')
-        int distance = (dropShadow.@distance ?: 0).toDouble()
-        double alpha = (dropShadow.@alpha ?: 1).toDouble() * lastShapeAlpha
-        int blurX = (dropShadow.@blurX ?: 0).toDouble() * scaleFactorX
-        //int blurY = (filter.DropShadowFilter.@blurY ?: 0).toDouble() * scaleFactorY
-        boolean inner = (dropShadow.@inner ?: false)
+    private Effect parseShadow(Node shadow) {
+        Effect effect
+        double angle       = Math.toRadians(-(shadow.@angle ?: 0).toDouble())
+        String colorString = (shadow.@color ?: '#000000')
+        int distance       = (shadow.@distance ?: 0).toDouble()
+        double alpha       = (shadow.@alpha ?: 1).toDouble() * lastShapeAlpha
+        int blurX          = (shadow.@blurX ?: 0).toDouble() * scaleFactorX
+        int blurY          = (shadow.@blurY ?: 0).toDouble() * scaleFactorY
+        boolean inner      = (shadow.@inner ?: false)
         Color color = parseColor(colorString, alpha)
         double offsetX = distance * Math.cos(angle) * scaleFactorX
         double offsetY = distance * Math.sin(angle) * scaleFactorY
 
+        double referenceSize = originalWidth <= originalHeight ? originalWidth : originalHeight
         if (inner) {
-            fxgFilter = new InnerShadow(blurX, offsetX, offsetY, color)
+            effect = new InnerShadow()
         } else {
-            DropShadow dShadow = new DropShadow()
-            dShadow.setOffsetX(offsetX)
-            dShadow.setOffsetY(offsetY)
-            dShadow.setRadius(blurX)
-            dShadow.setColor(color)
-            fxgFilter = dShadow
+            effect = new DropShadow()
         }
-        return fxgFilter
+        effect.setWidth(blurX / referenceSize)
+        effect.setHeight(blurY / referenceSize)
+        effect.setOffsetX(offsetX)
+        effect.setOffsetY(offsetY)
+        effect.setRadius(blurX / referenceSize)
+        effect.setColor(color)
+        effect.setBlurType(BlurType.GAUSSIAN)
+
+        return effect
     }
 
     private Color parseColor(node) {
@@ -376,7 +389,7 @@ class FxgFxParser {
         double red = Integer.valueOf(color[1..2], 16).intValue() / 255
         double green = Integer.valueOf(color[3..4], 16).intValue() /255
         double blue = Integer.valueOf(color[5..6], 16).intValue() / 255
-        return new Color(red, green, blue, alpha)
+        return Color.color(red, green, blue, alpha)
     }
 
     private convertSolidColor(paint, node) {
@@ -445,6 +458,15 @@ class FxgFxParser {
     }
 
     private Group convertLayer(layer, group) {
+        double x = groupOffsetX * scaleFactorX
+        double y = groupOffsetY * scaleFactorY
+        double width = originalWidth * scaleFactorX
+        double height = originalHeight * scaleFactorY
+        final Rectangle iBounds = new Rectangle(x, y, width, height)
+        iBounds.setOpacity(0.0)
+        iBounds.setStroke(null)
+        group.getChildren().add(iBounds)
+
         layer.each {Node node->
             Shape shape
             switch(node.name()) {
