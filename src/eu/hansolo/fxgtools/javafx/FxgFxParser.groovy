@@ -1,41 +1,40 @@
 package eu.hansolo.fxgtools.javafx
 
 import groovy.xml.Namespace
-import javafx.scene.Group
-import javafx.scene.paint.Color
-import javafx.scene.shape.Shape
-import javafx.scene.shape.Rectangle
-import javafx.scene.shape.Ellipse
-import javafx.scene.shape.Line
-import javafx.scene.shape.Path
-import javafx.scene.effect.Effect
-import javafx.scene.shape.FillRule
-import javafx.scene.shape.MoveTo
-import javafx.scene.shape.LineTo
-import javafx.scene.shape.CubicCurveTo
-import javafx.scene.shape.QuadCurveTo
-import javafx.scene.shape.ClosePath
-import javafx.scene.text.Text
-import javafx.scene.text.Font
-import javafx.geometry.VPos
-import javafx.scene.text.FontPosture
-import javafx.scene.text.FontWeight
-import javafx.scene.paint.LinearGradient
-import javafx.scene.paint.CycleMethod
-import javafx.scene.paint.Stop
-import javafx.scene.paint.RadialGradient
 import javafx.geometry.Point2D
+import javafx.geometry.VPos
+import javafx.scene.Group
+import javafx.scene.effect.BlurType
+import javafx.scene.effect.DropShadowBuilder
+import javafx.scene.effect.Effect
+import javafx.scene.effect.InnerShadowBuilder
+import javafx.scene.paint.Color
+import javafx.scene.paint.CycleMethod
+import javafx.scene.paint.LinearGradient
 import javafx.scene.paint.Paint
-import javafx.scene.shape.StrokeType
+import javafx.scene.paint.RadialGradient
+import javafx.scene.paint.Stop
+import javafx.scene.shape.ClosePath
+import javafx.scene.shape.CubicCurveTo
+import javafx.scene.shape.Ellipse
+import javafx.scene.shape.FillRule
+import javafx.scene.shape.Line
+import javafx.scene.shape.LineTo
+import javafx.scene.shape.MoveTo
+import javafx.scene.shape.Path
+import javafx.scene.shape.QuadCurveTo
+import javafx.scene.shape.Rectangle
+import javafx.scene.shape.Shape
 import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeLineJoin
-import javafx.scene.effect.InnerShadow
-import javafx.scene.effect.DropShadow
+import javafx.scene.shape.StrokeType
+import javafx.scene.text.Font
+import javafx.scene.text.FontPosture
+import javafx.scene.text.FontWeight
+import javafx.scene.text.Text
 import javafx.scene.transform.Affine
 import javafx.scene.transform.Rotate
 import javafx.scene.transform.Scale
-import javafx.scene.text.TextBoundsType
-import javafx.scene.effect.BlurType
 
 /**
  * User: han.solo at muenster.de
@@ -44,8 +43,8 @@ import javafx.scene.effect.BlurType
  */
 class FxgFxParser {
     // Variable declarations
-    private final Namespace D = new Namespace("http://ns.adobe.com/fxg/2008/dt")
-    private final Namespace FXG = new Namespace("http://ns.adobe.com/fxg/2008")
+    private final  Namespace D   = new Namespace("http://ns.adobe.com/fxg/2008/dt")
+    private final  Namespace FXG = new Namespace("http://ns.adobe.com/fxg/2008")
     private double originalWidth
     private double originalHeight
     private double width
@@ -60,12 +59,12 @@ class FxgFxParser {
     private double lastShapeAlpha
     private Affine groupTransform
     private class FxgPathReader {
-        protected List path
+        protected List   path
         protected double scaleFactorX
         protected double scaleFactorY
 
         FxgPathReader(List newPath, final SCALE_FACTOR_X, final SCALE_FACTOR_Y){
-            path = newPath
+            path         = newPath
             scaleFactorX = SCALE_FACTOR_X
             scaleFactorY = SCALE_FACTOR_Y
         }
@@ -98,8 +97,8 @@ class FxgFxParser {
         }
 
         layers.eachWithIndex {def layer, int i ->
-            String layerName = groups.keySet().contains(layer.attribute(D.userLabel)) ? layer.attribute(D.userLabel) : layer.attribute(D.userLabel) + "_$i"
-            Group group = new Group()
+            String layerName  = groups.keySet().contains(layer.attribute(D.userLabel)) ? layer.attribute(D.userLabel) : layer.attribute(D.userLabel) + "_$i"
+            Group  group      = new Group()
             groups[layerName] = convertLayer(layer, group)
         }
         return groups
@@ -113,12 +112,13 @@ class FxgFxParser {
         return originalHeight
     }
 
+
     // ********************   P R I V A T E   M E T H O D S   **********************************************************
     private Rectangle parseRectangle(node) {
-        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
-        double width = (node.@width ?: 0).toDouble() * scaleFactorX
-        double height = (node.@height ?: 0).toDouble() * scaleFactorY
+        double x       = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y       = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double width   = (node.@width ?: 0).toDouble() * scaleFactorX
+        double height  = (node.@height ?: 0).toDouble() * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -133,10 +133,10 @@ class FxgFxParser {
     }
 
     private Ellipse parseEllipse(node) {
-        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
-        double width = (node.@width ?: 0).toDouble() * scaleFactorX
-        double height = (node.@height ?: 0).toDouble() * scaleFactorY
+        double x       = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y       = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double width   = (node.@width ?: 0).toDouble() * scaleFactorX
+        double height  = (node.@height ?: 0).toDouble() * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -146,10 +146,10 @@ class FxgFxParser {
     }
 
     private Line parseLine(node) {
-        double xFrom = ((node.@xFrom ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double yFrom = ((node.@yFrom ?: 0).toDouble() + groupOffsetY) * scaleFactorY
-        double xTo = ((node.@xTo ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double yTo = ((node.@yTo ?: 0).toDouble() + groupOffsetY) * scaleFactorX
+        double xFrom   = ((node.@xFrom ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double yFrom   = ((node.@yFrom ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        double xTo     = ((node.@xTo ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double yTo     = ((node.@yTo ?: 0).toDouble() + groupOffsetY) * scaleFactorX
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -159,9 +159,9 @@ class FxgFxParser {
     }
 
     private Path parsePath(node) {
-        String data = node.@data ?: ''
-        double x = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
-        double y = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
+        String data    = node.@data ?: ''
+        double x       = ((node.@x ?: 0).toDouble() + groupOffsetX) * scaleFactorX
+        double y       = ((node.@y ?: 0).toDouble() + groupOffsetY) * scaleFactorY
         //double scaleX = (node.@scaleX ?: 0).toDouble()
         //double scaleY = (node.@scaleY ?: 0).toDouble()
         //double rotation = (node.@rotation ?: 0).toDouble()
@@ -275,12 +275,12 @@ class FxgFxParser {
             def stroke = node.stroke
             if (stroke.SolidColorStroke) {
                 def solidColorStroke = stroke[0].SolidColorStroke
-                String colorString = (solidColorStroke[0].@color ?: '#000000')
-                double weight = (solidColorStroke[0].@weight ?: 1f).toDouble() * scaleFactorX
-                String caps = (solidColorStroke[0].@caps ?: 'round')
-                String joints = (solidColorStroke[0].@joints ?: 'round')
-                int alpha = (solidColorStroke[0].@alpha ?: 1).toDouble() * lastShapeAlpha
-                Color color = parseColor(colorString, alpha)
+                String colorString   = (solidColorStroke[0].@color ?: '#000000')
+                double weight        = (solidColorStroke[0].@weight ?: 1f).toDouble() * scaleFactorX
+                String caps          = (solidColorStroke[0].@caps ?: 'round')
+                String joints        = (solidColorStroke[0].@joints ?: 'round')
+                int alpha            = (solidColorStroke[0].@alpha ?: 1).toDouble() * lastShapeAlpha
+                Color color          = parseColor(colorString, alpha)
 
                 weight.compareTo(2.0) <= 0 ? shape.setStrokeType(StrokeType.OUTSIDE) : shape.setStrokeType(StrokeType.CENTERED)
 
@@ -331,50 +331,56 @@ class FxgFxParser {
     }
 
     private Effect parseFilter(node, shape) {
-        Effect shapeFilters = null
+        List<Effect> effectList = []
         if (node.filters) {
             node.filters.eachWithIndex { filter, i ->
                 if (filter.DropShadowFilter) {
-                    filter.DropShadowFilter.each { Node effectNode ->
-                        if (shapeFilters != null) {
-                            shapeFilters.setInput(parseShadow(effectNode))
-                        } else {
-                            shapeFilters = parseShadow(effectNode)
-                        }
+                    filter.DropShadowFilter.each { Node dropShadowNode ->
+                        effectList.add(parseShadow(dropShadowNode))
                     }
                 }
             }
+            for (int i = 1 ; i < effectList.size() ; i++) {
+                effectList[i].setInput(effectList[i-1])
+            }
         }
-        return shapeFilters
+        return effectList.last()
     }
 
     private Effect parseShadow(Node shadow) {
-        Effect effect
-        double angle       = Math.toRadians(-(shadow.@angle ?: 0).toDouble())
-        String colorString = (shadow.@color ?: '#000000')
-        int distance       = (shadow.@distance ?: 0).toDouble()
-        double alpha       = (shadow.@alpha ?: 1).toDouble() * lastShapeAlpha
-        int blurX          = (shadow.@blurX ?: 0).toDouble() * scaleFactorX
-        int blurY          = (shadow.@blurY ?: 0).toDouble() * scaleFactorY
-        boolean inner      = (shadow.@inner ?: false)
-        Color color = parseColor(colorString, alpha)
-        double offsetX = distance * Math.cos(angle) * scaleFactorX
-        double offsetY = distance * Math.sin(angle) * scaleFactorY
-
-        double referenceSize = originalWidth <= originalHeight ? originalWidth : originalHeight
+        Effect  effect
+        double  angle       = Math.toRadians((shadow.@angle ?: 0).toDouble())
+        String  colorString = (shadow.@color ?: '#000000')
+        int     distance    = (shadow.@distance ?: 0).toDouble()
+        double  alpha       = (shadow.@alpha ?: 1).toDouble() * lastShapeAlpha
+        int     blurX       = (shadow.@blurX ?: 0).toDouble()
+        int     blurY       = (shadow.@blurY ?: 0).toDouble()
+        boolean inner       = (shadow.@inner ?: false)
+        Color   color       = parseColor(colorString, alpha)
+        double  offsetX     = distance * Math.cos(angle)
+        double  offsetY     = distance * Math.sin(angle)
+        double  minSize     = originalWidth < originalHeight ? originalWidth : originalHeight
         if (inner) {
-            effect = new InnerShadow()
+            effect = InnerShadowBuilder.create()
+                                       //.width(blurX * scaleFactorX)
+                                       //.height(blurY * scaleFactorY)
+                                       .offsetX(offsetX * scaleFactorX)
+                                       .offsetY(offsetY * scaleFactorY)
+                                       .radius(blurX * 2 * scaleFactorX)
+                                       .color(color)
+                                       .blurType(BlurType.GAUSSIAN)
+                                       .build()
         } else {
-            effect = new DropShadow()
+            effect = DropShadowBuilder.create()
+                                      //.width(blurX * scaleFactorX)
+                                      //.height(blurY * scaleFactorY)
+                                      .offsetX(offsetX * scaleFactorX)
+                                      .offsetY(offsetY * scaleFactorY)
+                                      .radius(blurX * 2 * scaleFactorX)
+                                      .color(color)
+                                      .blurType(BlurType.GAUSSIAN)
+                                      .build()
         }
-        effect.setWidth(blurX / referenceSize)
-        effect.setHeight(blurY / referenceSize)
-        effect.setOffsetX(offsetX)
-        effect.setOffsetY(offsetY)
-        effect.setRadius(blurX / referenceSize)
-        effect.setColor(color)
-        effect.setBlurType(BlurType.GAUSSIAN)
-
         return effect
     }
 
@@ -386,9 +392,9 @@ class FxgFxParser {
 
     private Color parseColor(String color, double alpha) {
         assert color.size() == 7
-        double red = Integer.valueOf(color[1..2], 16).intValue() / 255
+        double red   = Integer.valueOf(color[1..2], 16).intValue() / 255
         double green = Integer.valueOf(color[3..4], 16).intValue() /255
-        double blue = Integer.valueOf(color[5..6], 16).intValue() / 255
+        double blue  = Integer.valueOf(color[5..6], 16).intValue() / 255
         return Color.color(red, green, blue, alpha)
     }
 
@@ -397,16 +403,16 @@ class FxgFxParser {
     }
 
     private Paint convertLinearGradient(node) {
-        def linearGradient = node.LinearGradient[0]
-        double x1 = (linearGradient.@x ?: 0).toDouble() * scaleFactorX
-        double y1 = (linearGradient.@y ?: 0).toDouble() * scaleFactorY
-        double scaleX = (linearGradient.@scaleX ?: 0).toDouble()
+        def linearGradient     = node.LinearGradient[0]
+        double x1              = (linearGradient.@x ?: 0).toDouble() * scaleFactorX
+        double y1              = (linearGradient.@y ?: 0).toDouble() * scaleFactorY
+        double scaleX          = (linearGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (linearGradient.@scaleY ?: 1).toDouble()
-        double rotation = Math.toRadians((linearGradient.@rotation ?: 0).toDouble())
-        double x2 = Math.cos(rotation) * scaleX * scaleFactorX + x1
-        double y2 = Math.sin(rotation) * scaleX * scaleFactorY + y1
-        def gradientEntries = linearGradient.GradientEntry
-        Stop[] stops = convertGradientEntries(gradientEntries)
+        double rotation        = Math.toRadians((linearGradient.@rotation ?: 0).toDouble())
+        double x2              = Math.cos(rotation) * scaleX * scaleFactorX + x1
+        double y2              = Math.sin(rotation) * scaleX * scaleFactorY + y1
+        def    gradientEntries = linearGradient.GradientEntry
+        Stop[] stops           = convertGradientEntries(gradientEntries)
 
         LinearGradient gradient = new LinearGradient(x1 + offsetX, y1 + offsetY, x2 + offsetX, y2 + offsetY, false, CycleMethod.NO_CYCLE, stops)
 
@@ -414,20 +420,20 @@ class FxgFxParser {
     }
 
     private Paint convertRadialGradient(node) {
-        def radialGradient = node.RadialGradient[0]
-        double x1 = (radialGradient.@x ?: 0).toDouble() * scaleFactorX
-        double y1 = (radialGradient.@y ?: 0).toDouble() * scaleFactorY
-        double scaleX = (radialGradient.@scaleX ?: 0).toDouble()
+        def     radialGradient  = node.RadialGradient[0]
+        double  x1              = (radialGradient.@x ?: 0).toDouble() * scaleFactorX
+        double  y1              = (radialGradient.@y ?: 0).toDouble() * scaleFactorY
+        double  scaleX          = (radialGradient.@scaleX ?: 0).toDouble()
         //double scaleY = (radialGradient.@scaleY ?: 0).toDouble()
-        double rotation = Math.toRadians((radialGradient.@rotation ?: 0).toDouble())
-        double x2 = Math.cos(rotation) * scaleX * scaleFactorX + x1
-        double y2 = Math.sin(rotation) * scaleX * scaleFactorY + y1
-        Point2D center = new Point2D(x1, y1)
-        Point2D stop = new Point2D(x2, y2)
-        double radius = (center.distance(stop) / 2.0)
-        def gradientEntries = radialGradient.GradientEntry
+        double  rotation        = Math.toRadians((radialGradient.@rotation ?: 0).toDouble())
+        double  x2              = Math.cos(rotation) * scaleX * scaleFactorX + x1
+        double  y2              = Math.sin(rotation) * scaleX * scaleFactorY + y1
+        Point2D center          = new Point2D(x1, y1)
+        Point2D stop            = new Point2D(x2, y2)
+        double  radius          = (center.distance(stop) / 2.0)
+        def     gradientEntries = radialGradient.GradientEntry
 
-        Stop[] stops = convertGradientEntries(gradientEntries)
+        Stop[]  stops           = convertGradientEntries(gradientEntries)
         RadialGradient gradient = new RadialGradient(0, 0, center.x + offsetX, center.y + offsetY, radius, false, CycleMethod.NO_CYCLE, stops)
 
         return gradient
@@ -437,8 +443,8 @@ class FxgFxParser {
         List stops = []
         gradientEntries.each { def gradientEntry->
             double fraction = (gradientEntry.@ratio ?: 0).toDouble()
-            double alpha = (gradientEntry.@alpha ?: 1).toDouble() * lastShapeAlpha
-            Color color = gradientEntry.@color == null ? Color.BLACK : parseColor(gradientEntry.@color, alpha)
+            double alpha    = (gradientEntry.@alpha ?: 1).toDouble() * lastShapeAlpha
+            Color  color    = gradientEntry.@color == null ? Color.BLACK : parseColor(gradientEntry.@color, alpha)
             stops.add(new Stop(fraction, color))
         }
         return stops
@@ -458,71 +464,73 @@ class FxgFxParser {
     }
 
     private Group convertLayer(layer, group) {
-        double x = groupOffsetX * scaleFactorX
-        double y = groupOffsetY * scaleFactorY
-        double width = originalWidth * scaleFactorX
+        double x      = groupOffsetX * scaleFactorX
+        double y      = groupOffsetY * scaleFactorY
+        double width  = originalWidth * scaleFactorX
         double height = originalHeight * scaleFactorY
-        final Rectangle iBounds = new Rectangle(x, y, width, height)
+        final  Rectangle iBounds = new Rectangle(x, y, width, height)
         iBounds.setOpacity(0.0)
         iBounds.setStroke(null)
         group.getChildren().add(iBounds)
 
         layer.each {Node node->
-            Shape shape
-            switch(node.name()) {
-                case FXG.Group:
-                    groupOffsetX = (node.@x ?: 0).toDouble()
-                    groupOffsetY = (node.@y ?: 0).toDouble()
-                    if (node.transform) {
-                        groupTransform = parseTransform(node)
-                    } else {
-                        groupTransform = null
-                    }
-                    convertLayer(node, group)
-                    break
-                case FXG.Rect:
-                    shape = parseRectangle(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
-                    group.getChildren().add(paintShape(node, shape))
-                    break
-                case FXG.Ellipse:
-                    shape = parseEllipse(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
-                    group.getChildren().add(paintShape(node, shape))
-                    break
-                case FXG.Line:
-                    shape = parseLine(node)
-                    offsetX = shape.layoutBounds.minX
-                    offsetY = shape.layoutBounds.minY
-                    group.getChildren().add(paintShape(node, shape))
-                    break
-                case FXG.Path:
-                    offsetX = groupOffsetX
-                    offsetY = groupOffsetY
-                    shape = parsePath(node)
-                    group.getChildren().add(paintShape(node, shape))
-                    break
-                case FXG.RichText:
-                    Text text = parseRichText(node)
-                    group.getChildren().add(text)
-                    break
+            if ('false' != node.@visible) {
+                Shape shape
+                switch(node.name()) {
+                    case FXG.Group:
+                        groupOffsetX = (node.@x ?: 0).toDouble()
+                        groupOffsetY = (node.@y ?: 0).toDouble()
+                        if (node.transform) {
+                            groupTransform = parseTransform(node)
+                        } else {
+                            groupTransform = null
+                        }
+                        convertLayer(node, group)
+                        break
+                    case FXG.Rect:
+                        shape = parseRectangle(node)
+                        offsetX = shape.layoutBounds.minX
+                        offsetY = shape.layoutBounds.minY
+                        group.getChildren().add(paintShape(node, shape))
+                        break
+                    case FXG.Ellipse:
+                        shape = parseEllipse(node)
+                        offsetX = shape.layoutBounds.minX
+                        offsetY = shape.layoutBounds.minY
+                        group.getChildren().add(paintShape(node, shape))
+                        break
+                    case FXG.Line:
+                        shape = parseLine(node)
+                        offsetX = shape.layoutBounds.minX
+                        offsetY = shape.layoutBounds.minY
+                        group.getChildren().add(paintShape(node, shape))
+                        break
+                    case FXG.Path:
+                        offsetX = groupOffsetX
+                        offsetY = groupOffsetY
+                        shape = parsePath(node)
+                        group.getChildren().add(paintShape(node, shape))
+                        break
+                    case FXG.RichText:
+                        Text text = parseRichText(node)
+                        group.getChildren().add(text)
+                        break
+                }
             }
         }
         return group
     }
 
     private void prepareParameters(def fxg, final double WIDTH, final double HEIGHT, final boolean KEEP_ASPECT) {
-        originalWidth = (int)(fxg.@viewWidth ?: 100).toDouble()
-        originalHeight = (int)(fxg.@viewHeight ?: 100).toDouble()
+        originalWidth  = (int)(fxg.@viewWidth ?: 300).toDouble()
+        originalHeight = (int)(fxg.@viewHeight ?: 300).toDouble()
 
-        width = WIDTH
-        height = KEEP_ASPECT ? WIDTH * (originalHeight / originalWidth) : HEIGHT
+        width          = WIDTH
+        height         = KEEP_ASPECT ? WIDTH * (originalHeight / originalWidth) : HEIGHT
 
-        aspectRatio = originalHeight / originalWidth
+        aspectRatio    = originalHeight / originalWidth
 
-        scaleFactorX = width / originalWidth
-        scaleFactorY = height / originalHeight
+        scaleFactorX   = width / originalWidth
+        scaleFactorY   = height / originalHeight
     }
 }

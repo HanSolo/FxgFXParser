@@ -1,22 +1,10 @@
 package eu.hansolo.fxgtools.javafx;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseDragEvent;
@@ -33,6 +21,20 @@ import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * User: han.solo at muenster.de
  * Date: 02.09.11
@@ -40,12 +42,10 @@ import javafx.stage.Stage;
  */
 public class FxgTest extends Application
 {
-    private File                folder       = new File("/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files");
-    private File                file         = new File(folder + System.getProperty("file.separator") + "LcdFX.fxg");
     private Map<String, Group>  groups       = new HashMap<>();
     private Group               dropZone     = new Group();
-    private int                 width        = 200;
-    private int                 height       = 200;
+    private int                 width        = 300;
+    private int                 height       = 300;
     private StackPane           stackPane;
     private WatchService        watchService;
     private Thread              fileWatcher;
@@ -53,28 +53,9 @@ public class FxgTest extends Application
     @Override
     public void start(Stage stage) {
         drawDropZone(width, height, groups);
-        final DataFormat customFormat = new DataFormat("helloworld.custom");
 
-        final File folder = new File("/Volumes/Macintosh HD/Users/hansolo/Desktop/InSync/Java Apps/FXG Converter/fxg files");
-        final File file = new File(folder + System.getProperty("file.separator") + "LcdFX.fxg");
-
-        fileWatcher = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    listenForChanges(folder, file);
-                } catch(ClosedWatchServiceException exception) {
-                    System.out.println("WatchService closed");
-                } catch (IOException exception) {
-                   System.out.println(exception);
-                }
-            }
-        });
-        fileWatcher.start();
         stackPane = new StackPane();
-
         stackPane.getChildren().add(dropZone);
-        //convert(file.getAbsolutePath());
 
         Scene scene = new Scene(stackPane, width, height);
         initSceneDragAndDrop(scene);
@@ -89,13 +70,15 @@ public class FxgTest extends Application
         fileWatcher.interrupt();
     }
 
-    private void listenForChanges(final File FOLDER, final File FILE) throws IOException, ClosedWatchServiceException {
-        java.nio.file.Path path = FOLDER.toPath();
+    private void listenForChanges(final String FOLDER_NAME, final String FILE_NAME) throws IOException, ClosedWatchServiceException {
+        final File         FOLDER = new File(FOLDER_NAME);
+        final File         FILE   = new File(FILE_NAME);
+        java.nio.file.Path path   = FOLDER.toPath();
         if (FOLDER.isDirectory()) {
             watchService = path.getFileSystem().newWatchService();
             path.register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
             WatchKey watch = null;
-            while (true) {
+            while (!fileWatcher.isInterrupted()) {
                 System.out.println("Watching directory: " + FOLDER.getPath());
                 try {
                     watch = watchService.take();
@@ -115,10 +98,10 @@ public class FxgTest extends Application
                         System.out.println("Deleted: " + context.getFileName());
                     } else if (kind.equals(StandardWatchEventKinds.ENTRY_MODIFY)) {
                         if (context.toString().equals(FILE.getName())) {
+                            System.out.println("Modified: " + context.getFileName());
                             Platform.runLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    convert(FILE.getAbsolutePath());
+                                @Override public void run() {
+                                    convert(FOLDER_NAME + FILE_NAME);
                                 }
                             });
                         } else {
@@ -133,7 +116,7 @@ public class FxgTest extends Application
     }
 
     private void convert(final String FILE_NAME) {
-            FxgFxParser parser = new FxgFxParser();
+        FxgFxParser parser = new FxgFxParser();
         groups.clear();
         groups = parser.parse(FILE_NAME, width, height, true);
         drawDropZone(width, height, groups);
@@ -145,6 +128,10 @@ public class FxgTest extends Application
         dropZone.getChildren().clear();
 
         if (FXG_GROUPS.isEmpty()) {
+            final Rectangle BACKGROUND = new Rectangle(SIZE, SIZE);
+            BACKGROUND.setFill(Color.WHITE);
+            BACKGROUND.setStroke(null);
+
             final Color COLOR = Color.rgb(165, 165, 165);
             final javafx.scene.shape.Path ARROW = new javafx.scene.shape.Path();
             ARROW.setFillRule(FillRule.EVEN_ODD);
@@ -236,7 +223,8 @@ public class FxgTest extends Application
             CORNER4.setFill(COLOR);
             CORNER4.setStroke(null);
 
-            dropZone.getChildren().addAll(ARROW,
+            dropZone.getChildren().addAll(BACKGROUND,
+                                          ARROW,
                                           TOPLEFTRECT,
                                           TOPRIGHTRECT,
                                           UPPERLEFTRECT,
@@ -254,12 +242,10 @@ public class FxgTest extends Application
         }
     }
 
-
     private void initSceneDragAndDrop(Scene scene) {
         dropZone.setOnDragOver(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent dragEvent) {
-                System.out.println("DragOver");
+            @Override public void handle(DragEvent dragEvent) {
+                //System.out.println("DragOver");
                 Dragboard dragboard = dragEvent.getDragboard();
                 if (dragboard.hasFiles() || dragboard.hasUrl()) {
                     dragEvent.acceptTransferModes(TransferMode.ANY);
@@ -268,44 +254,66 @@ public class FxgTest extends Application
             }
         });
         dropZone.setOnDragEntered(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent dragEvent) {
-                System.out.println("DragEntered");
+            @Override public void handle(DragEvent dragEvent) {
+                //System.out.println("DragEntered");
             }
         });
         dropZone.setOnDragDone(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent dragEvent) {
-                System.out.println("DragDone");
+            @Override public void handle(DragEvent dragEvent) {
+                //System.out.println("DragDone");
             }
         });
         dropZone.setOnDragDetected(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                System.out.println("DragDetected");
+            @Override public void handle(MouseEvent mouseEvent) {
+                //System.out.println("DragDetected");
             }
         });
 
         dropZone.setOnMouseDragReleased(new EventHandler<MouseDragEvent>() {
-            @Override
-            public void handle(MouseDragEvent mouseDragEvent) {
-                System.out.println("MouseDragReleased");
+            @Override public void handle(MouseDragEvent mouseDragEvent) {
+                //System.out.println("MouseDragReleased");
         }
         });
         dropZone.setOnDragDropped(new EventHandler<DragEvent>() {
-            @Override
-            public void handle(DragEvent dragEvent) {
-                System.out.println("DragDropped");
+            @Override public void handle(DragEvent dragEvent) {
                 Dragboard dragboard = dragEvent.getDragboard();
                 String url = null;
+                URI    uri = null;
                 if (dragboard.hasFiles()) {
-                    url = dragboard.getFiles().get(0).toURI().toString();
+                    uri = dragboard.getFiles().get(0).toURI();
                 } else if (dragboard.hasUrl()) {
                     url = dragboard.getUrl();
                 }
+                // do the conversion if a files was dropped
+                if (uri != null) {
+                    try {
+                        final String FULL_PATH   = URLDecoder.decode(uri.getPath(), "UTF-8");
+                        final String FOLDER_NAME = FULL_PATH.substring(0, FULL_PATH.lastIndexOf(System.getProperty("file.separator")) + 1);
+                        final String FILE_NAME   = FULL_PATH.substring(FULL_PATH.lastIndexOf(System.getProperty("file.separator")) + 1);
+                        convert(FULL_PATH);
+
+                        if (fileWatcher != null) {
+                            fileWatcher.interrupt();
+                        }
+
+                        fileWatcher = new Thread(new Runnable(){
+                            @Override public void run() {
+                                try {
+                                    listenForChanges(FOLDER_NAME, FILE_NAME);
+                                } catch (IOException e) {
+                                    System.out.println(e);
+                                }
+                            }
+                        });
+                        fileWatcher.start();
+
+
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (url != null) {
-                    System.out.println(url);
-                    convert(url.toString());
+                    System.out.println("URL: " + url);
                 }
                 dragEvent.setDropCompleted(url != null);
                 dragEvent.consume();
